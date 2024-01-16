@@ -47,38 +47,20 @@ impl Q3Client {
             players: Vec::new(),
         };
 
-        let socket = UdpSocket::bind("0.0.0.0:0");
-        if let Err(e) = socket {
-            return Err(e.into());
-        }
-
-        let socket = socket.unwrap();
-        let timeout_result = socket.set_read_timeout(Some(self.options.read_timeout));
-        if let Err(e) = timeout_result {
-            return Err(e.into());
-        }
-        let timeout_result = socket.set_write_timeout(Some(self.options.write_timeout));
-        if let Err(e) = timeout_result {
-            return Err(e.into());
-        }
+        let socket = UdpSocket::bind("0.0.0.0:0")?;
+        socket.set_read_timeout(Some(self.options.read_timeout))?;
+        socket.set_write_timeout(Some(self.options.write_timeout))?;
 
         // join 0xff, 0xff, 0xff, 0xff and getstatus (as string)
         let prefix: [u8; 4] = [0xff, 0xff, 0xff, 0xff];
         let getstatus = String::from("getstatus");
         let buf = [&prefix, getstatus.as_bytes()].concat();
 
-        let send_result = socket.send_to(&buf, &self.hostname);
-        if let Err(e) = send_result {
-            return Err(e.into());
-        }
+        socket.send_to(&buf, &self.hostname)?;
 
         let mut buf: [u8; 1024] = [0; 1024];
-        let receive_result = socket.recv_from(&mut buf);
-        if let Err(e) = receive_result {
-            return Err(e.into());
-        }
+        let (bytes_read, _) = socket.recv_from(&mut buf)?;
 
-        let (bytes_read, _) = receive_result.unwrap();
         let response = String::from_utf8_lossy(&buf[..bytes_read]);
 
         let rows = response.split("\n").collect::<Vec<&str>>();
