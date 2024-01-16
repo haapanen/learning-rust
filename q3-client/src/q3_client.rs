@@ -28,20 +28,20 @@ pub struct ServerStatus {
 
 impl Q3Client {
     pub fn new(hostname: String) -> Self {
-        return Q3Client::new_with_options(
+        Q3Client::new_with_options(
             hostname,
             Q3ClientOptions {
                 read_timeout: Duration::from_secs(5),
                 write_timeout: Duration::from_secs(5),
             },
-        );
+        )
     }
 
     pub fn new_with_options(hostname: String, options: Q3ClientOptions) -> Self {
         Self { hostname, options }
     }
 
-    pub fn get_status(self: &Self) -> Result<ServerStatus, Box<dyn Error>> {
+    pub fn get_status(self) -> Result<ServerStatus, Box<dyn Error>> {
         let mut status = ServerStatus {
             keys: HashMap::new(),
             players: Vec::new(),
@@ -63,12 +63,12 @@ impl Q3Client {
 
         let response = String::from_utf8_lossy(&buf[..bytes_read]);
 
-        let rows = response.split("\n").collect::<Vec<&str>>();
+        let rows = response.split('\n').collect::<Vec<&str>>();
 
-        let keys = rows[1].split("\\").skip(1).collect::<Vec<&str>>();
+        let keys = rows[1].split('\\').skip(1).collect::<Vec<&str>>();
         let mut current_key = keys[1].to_string();
         for val in &keys[1..] {
-            if current_key == "" {
+            if current_key.is_empty() {
                 current_key = val.to_string();
                 continue;
             }
@@ -90,11 +90,11 @@ impl Q3Client {
             })
             .collect::<Vec<Player>>();
 
-        return Ok(status);
+        Ok(status)
     }
 
     fn parse_player_name(get_status_player: &str) -> String {
-        return get_status_player.split("\"").collect::<Vec<&str>>()[1].to_string();
+        return get_status_player.split('"').collect::<Vec<&str>>()[1].to_string();
     }
 }
 
@@ -120,7 +120,7 @@ mod string_utils {
             i += 1;
         }
 
-        return cleaned_string;
+        cleaned_string
     }
 
     #[cfg(test)]

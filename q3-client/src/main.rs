@@ -1,5 +1,4 @@
 use clap::Parser;
-use serde_json;
 mod q3_client;
 
 #[derive(Parser, Debug)]
